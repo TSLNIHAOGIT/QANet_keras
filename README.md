@@ -1,4 +1,9 @@
 ## QANet in keras
+
+##修改了一些函数使其适应tensorflow2-keras版本运行，但是要关闭eager模式，否则会报错：
+TypeError: An op outside of the function building code is being passed a "Graph" tensor. It is possible to have Graph tensors leak out of the function building context by including a tf.init_scope in your function building code.
+
+
 QANet: https://arxiv.org/abs/1804.09541
 
 This keras model refers to QANet in tensorflow (https://github.com/NLPLearn/QANet). 
