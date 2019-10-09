@@ -1,14 +1,14 @@
 import QANet_keras as QANet
 import os
-from keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam
 import numpy as np
 from keras.models import load_model
 import pandas as pd
 import pickle
-from keras.callbacks import Callback
+from tensorflow.keras.callbacks import Callback
 import argparse
 from layers.ExponentialMovingAverage import ExponentialMovingAverage
-import keras.backend as K
+import tensorflow.keras.backend as K
 import collections
 from utils.output import write_predictions
 from utils.evaluation import evaluate

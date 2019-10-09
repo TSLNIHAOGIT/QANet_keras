@@ -1,7 +1,13 @@
-from keras.optimizers import *
-from keras.initializers import *
+from tensorflow.keras.optimizers import *
+from tensorflow.keras.initializers import *
 from QANet_keras import QANet
+import numpy as np
+import tensorflow as tf
 
+#关闭eager模式
+tf.compat.v1.disable_eager_execution()
+
+tf.keras.backend.set_learning_phase(1)  # training
 embedding_matrix = np.random.random((10000, 300))
 embedding_matrix_char = np.random.random((1233, 64))
 config = {
@@ -14,7 +20,7 @@ config = {
     'char_input_size': 1233,
     'filters': 128,
     'num_head': 8,
-    'dropout': 0.1,
+    'dropout': 0.5,
     'batch_size': 16,
     'epoch': 25,
     'ema_decay': 0.9999,

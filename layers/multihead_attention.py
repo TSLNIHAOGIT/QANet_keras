@@ -1,12 +1,12 @@
 # ! -*- coding: utf-8 -*-
 
-from keras import backend as K
-from keras.engine.topology import Layer
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
 class Attention(Layer):
-    def __init__(self, units, num_heads, dropout=0.0, bias=True, **kwargs):
+    def __init__(self, units, num_heads, dropout=0.1, bias=True, **kwargs):
         self.units = units
         self.num_heads = num_heads
         self.dropout = dropout

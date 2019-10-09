@@ -1,6 +1,6 @@
-from keras.layers import *
-from keras.regularizers import *
-from keras.models import *
+from tensorflow.keras.layers import *
+from tensorflow.keras.regularizers import *
+from tensorflow.keras.models import *
 from layers.context2query_attention import context2query_attention
 from layers.multihead_attention import Attention as MultiHeadAttention
 from layers.position_embedding import Position_Embedding as PositionEmbedding
@@ -10,9 +10,9 @@ from layers.QAoutputBlock import QAoutputBlock
 from layers.BatchSlice import BatchSlice
 from layers.DepthwiseConv1D import DepthwiseConv1D
 from layers.LabelPadding import LabelPadding
-from keras.initializers import VarianceScaling
+from tensorflow.keras.initializers import VarianceScaling
 import tensorflow as tf
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 regularizer = l2(3e-7)
 init = VarianceScaling(scale=1.0, mode='fan_avg', distribution='uniform')
@@ -24,7 +24,7 @@ def mask_logits(inputs, mask, mask_value=-1e30):
     return inputs + mask_value * (1 - mask)
 
 
-def highway(highway_layers, x, num_layers=2, dropout=0.0):
+def highway(highway_layers, x, num_layers=2, dropout=0.1):
     # reduce dim
     x = highway_layers[0](x)
     for i in range(num_layers):
@@ -35,7 +35,7 @@ def highway(highway_layers, x, num_layers=2, dropout=0.0):
     return x
 
 
-def conv_block(conv_layers, x, num_conv=4, dropout=0.0, l=1., L=1.):
+def conv_block(conv_layers, x, num_conv=4, dropout=0.1, l=1., L=1.):
     for i in range(num_conv):
         residual = x
         x = LayerNormalization()(x)
@@ -46,7 +46,7 @@ def conv_block(conv_layers, x, num_conv=4, dropout=0.0, l=1., L=1.):
     return x
 
 
-def attention_block(attention_layer, x, seq_mask, dropout=0.0, l=1., L=1.):
+def attention_block(attention_layer, x, seq_mask, dropout=0.1, l=1., L=1.):
     residual = x
     x = LayerNormalization()(x)
     x = Dropout(dropout)(x)
@@ -57,7 +57,7 @@ def attention_block(attention_layer, x, seq_mask, dropout=0.0, l=1., L=1.):
     return x
 
 
-def feed_forward_block(FeedForward_layers, x, dropout=0.0, l=1., L=1.):
+def feed_forward_block(FeedForward_layers, x, dropout=0.1, l=1., L=1.):
     residual = x
     x = LayerNormalization()(x)
     x = Dropout(dropout)(x)
@@ -69,14 +69,14 @@ def feed_forward_block(FeedForward_layers, x, dropout=0.0, l=1., L=1.):
 
 def QANet(config, word_mat=None, char_mat=None, cove_model=None):
     # parameters
-    word_dim = config.word_dim
-    char_dim = config.char_dim
-    cont_limit = config.cont_limit
-    char_limit = config.char_limit
-    ans_limit = config.ans_limit
-    filters = config.filters
-    num_head = config.num_head
-    dropout = config.dropout
+    word_dim = config['word_dim']
+    char_dim = config['char_dim']
+    cont_limit = config['cont_limit']
+    char_limit = config['char_limit']
+    ans_limit = config['ans_limit']
+    filters = config['filters']
+    num_head = config['num_head']
+    dropout = config['dropout']
 
     # Input Embedding Layer
     contw_input_ = Input((None,))

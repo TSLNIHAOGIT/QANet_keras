@@ -1,5 +1,5 @@
 # ! -*- coding: utf-8 -*-
-from keras.engine.topology import Layer
+from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 def shape_list(x):

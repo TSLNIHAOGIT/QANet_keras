@@ -1,7 +1,7 @@
 # ! -*- coding: utf-8 -*-
-from keras.engine.topology import Layer
+from tensorflow.keras.layers import Layer
 import tensorflow as tf
-import keras.backend as K
+import tensorflow.keras.backend as K
 
 class LayerNormalization(Layer):
     def __init__(self, **kwargs):
@@ -21,7 +21,7 @@ class LayerNormalization(Layer):
     def call(self, x, mask=None, training=None):
         mean = tf.reduce_mean(x, axis=-1, keepdims=True)
         variance = tf.reduce_mean(tf.square(x - mean), axis=-1, keepdims=True)
-        norm_x = (x - mean) * tf.rsqrt(variance + K.epsilon())
+        norm_x = (x - mean) * tf.math.rsqrt(variance + K.epsilon())
         return norm_x * self.scale + self.bias
 
     def compute_output_shape(self, input_shape):

@@ -1,7 +1,8 @@
-from keras.engine.topology import Layer
-from keras.initializers import VarianceScaling
-from keras.regularizers import *
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.initializers import VarianceScaling
+from tensorflow.keras.regularizers import *
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 
 class context2query_attention(Layer):

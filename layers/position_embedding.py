@@ -1,4 +1,4 @@
-from keras.engine.topology import Layer
+from tensorflow.keras.layers import Layer
 import tensorflow as tf
 import math
 
@@ -10,13 +10,13 @@ class Position_Embedding(Layer):
         super(Position_Embedding, self).__init__(**kwargs)
 
     def get_timing_signal_1d(self, length, channels):
-        position = tf.to_float(tf.range(length))
+        position=tf.cast(tf.range(length),dtype=tf.float32)
         num_timescales = channels // 2
-        log_timescale_increment = (math.log(float(self.max_timescale) / float(self.min_timescale)) / (tf.to_float(num_timescales) - 1))
-        inv_timescales = self.min_timescale * tf.exp(tf.to_float(tf.range(num_timescales)) * -log_timescale_increment)
+        log_timescale_increment = (math.log(float(self.max_timescale) / float(self.min_timescale)) / (tf.cast(num_timescales,dtype=tf.float32) - 1))
+        inv_timescales = self.min_timescale * tf.exp(tf.cast(tf.range(num_timescales),dtype=tf.float32) * -log_timescale_increment)
         scaled_time = tf.expand_dims(position, 1) * tf.expand_dims(inv_timescales, 0)
         signal = tf.concat([tf.sin(scaled_time), tf.cos(scaled_time)], axis=1)
-        signal = tf.pad(signal, [[0, 0], [0, tf.mod(channels, 2)]])
+        signal = tf.pad(signal, [[0, 0], [0, tf.math.mod(channels, 2)]])
         signal = tf.reshape(signal, [1, length, channels])
         return signal
 

@@ -1,8 +1,8 @@
 import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.training import slot_creator
-import keras.backend as K
-from keras.backend import moving_averages
+import tensorflow.keras.backend as K
+from tensorflow.keras.backend import moving_averages
 from tqdm import tqdm
 
 
