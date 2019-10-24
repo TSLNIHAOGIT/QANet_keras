@@ -58,7 +58,8 @@ class context2query_attention(Layer):
         c2q = tf.matmul(S_, x_ques)
         q2c = tf.matmul(tf.matmul(S_, S_T), x_cont)
         result = K.concatenate([x_cont, c2q, x_cont * c2q, x_cont * q2c], axis=-1)
-
+        #result Tensor("context2query_attention/concat_2:0", shape=(None, None, 512), dtype=float32)
+        print('result',result)
         return result
 
     def compute_output_shape(self, input_shape):

@@ -79,6 +79,7 @@ def QANet(config, word_mat=None, char_mat=None, cove_model=None):
     dropout = config['dropout']
 
     # Input Embedding Layer
+    #`Input()` is used to instantiate a Keras tensor.S
     contw_input_ = Input((None,))
     quesw_input_ = Input((None,))
     contc_input_ = Input((None, char_limit))
@@ -189,14 +190,21 @@ def QANet(config, word_mat=None, char_mat=None, cove_model=None):
     x_ques = conv_block(Encoder_DepthwiseConv1, x_ques, 4, dropout)
     x_ques = attention_block(Encoder_SelfAttention1, x_ques, q_mask, dropout)
     x_ques = feed_forward_block(Encoder_FeedForward1, x_ques, dropout)
+    
+    print('x_cont={}\n  x_ques={}\n  c_mask={}\n  q_mask={}\n'.format(x_cont, x_ques, c_mask, q_mask))
 
     # Context_to_Query_Attention_Layer
+    ##512, c_maxlen, q_maxlen, dropout初始化该层的类，输入为[x_cont, x_ques, c_mask, q_mask]
+      #x_shape=(batch_size, context_length, 512)
     x = context2query_attention(512, c_maxlen, q_maxlen, dropout)([x_cont, x_ques, c_mask, q_mask])
+    
+    print('Context_to_Query_Attention_Layer x',x)
     x = Conv1D(filters, 1,
                kernel_initializer=init,
                kernel_regularizer=regularizer,
                activation='linear')(x)
 
+    print('conv1d x',x)
     # Model_Encoder_Layer
     # shared layers
     Encoder_DepthwiseConv2 = []
@@ -233,16 +241,53 @@ def QANet(config, word_mat=None, char_mat=None, cove_model=None):
             x = attention_block(Encoder_SelfAttention2[j], x, c_mask, dropout, l=j, L=7)
             x = feed_forward_block(Encoder_FeedForward2[j], x, dropout, l=j, L=7)
         outputs.append(x)
-
+     
+    print('outputs',outputs)
     # Output_Layer
     x_start = Concatenate()([outputs[1], outputs[2]])
+    print('output_layer x_start',x_start)
+    '''
+    keras.layers.Conv1D(filters, kernel_size, strides=1, padding='valid', data_format='channels_last', dilation_rate=1, activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
+    
+    Input shape:
+      3D tensor with shape: `(batch_size, time_steps, input_dim)`
+
+  Output shape:
+      3D tensor with shape: `(batch_size, new_steps, filters)`
+      `steps` value might have changed due to padding or strides.
+
+这也可以解释，为什么在Keras中使用Conv1D可以进行自然语言处理，因为在自然语言处理中，我们假设一个序列是600个单词，每个单词的词向量是300维，那么一个序列输入到网络中就是（600,300），当我使用Conv1D进行卷积的时候，实际上就完成了直接在序列上的卷积，卷积的时候实际是以（3,300）进行卷积，又因为每一行都是一个词向量，因此使用Conv1D（kernel_size=3）也就相当于使用神经网络进行了n_gram=3的特征提取了。这也是为什么使用卷积神经网络处理文本会非常快速有效的内涵。
+
+Conv1D（kernel_size=3）实际就是Conv2D（kernel_size=（3,300）），当然必须把输入也reshape成（600,300,1），即可在多行上进行Conv2D卷积。
+所以这里的kernel_size=1，是conv2d的（1，词向量维度）
+
+
+
+    '''
     x_start = Conv1D(1, 1,
                      kernel_initializer=init,
                      kernel_regularizer=regularizer,
                      activation='linear')(x_start)
+    print('conv1D x_start',x_start)
+    
+    #从tensor中删除所有大小是1的维度
     x_start = Lambda(lambda x: tf.squeeze(x, axis=-1))(x_start)
+    print('squeeze x_start',x_start)
+    
+    
+    ## mask_logits输出维度与输入维度一样
     x_start = Lambda(lambda x: mask_logits(x[0], x[1]))([x_start, c_mask])
+    print('mask_logits x_start',x_start)
+    
+    ##输出的x_start是已经经过了softmax计算之后的值
+    
+    '''
+    softmax = tf.exp(logits) / tf.reduce_sum(tf.exp(logits), axis)
+    Returns:
+    A `Tensor`. Has the same type and shape as `logits`.
+    '''
     x_start = Lambda(lambda x: K.softmax(x), name='start')(x_start)  # [bs, len]
+    print('x_start softmax',x_start,)
 
     x_end = Concatenate()([outputs[1], outputs[3]])
     x_end = Conv1D(1, 1,
@@ -258,6 +303,6 @@ def QANet(config, word_mat=None, char_mat=None, cove_model=None):
     # if use model.fit, the output shape must be padded to the max length
     x_start = LabelPadding(cont_limit, name='start_pos')(x_start)
     x_end = LabelPadding(cont_limit, name='end_pos')(x_end)
-
+    print('x_start  x_start_fin x_end x_end_fin ',x_start,x_start_fin,x_end,x_end_fin)
     return Model(inputs=[contw_input_, quesw_input_, contc_input_, quesc_input_],
                  outputs=[x_start, x_end, x_start_fin, x_end_fin])
